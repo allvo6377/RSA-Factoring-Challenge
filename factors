@@ -1,49 +1,38 @@
-#!/usr/bin/env bash
-# is a factors challenge
+#!/usr/bin/env python3
+# RSA factoring challenge
+import sys
+import os
+if len(sys.argv) != 2:
+    print("Usage:", sys.argv[0], "file")
+    exit(1)
+if not os.path.isfile(sys.argv[1]):
+    print(sys.argv[0]+":", "File", sys.argv[1], "not found.")
+    exit(1)
+def rho(n, c):
+    t = 2
+    h = 2
+    d = 1
 
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+    while d == 1:
+        t = (t*t + c) % n
+        h = (h*h + c) % n
+        h = (h*h + c) % n
+        d = gcd(t-h, n)
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+    if d == n:
+        return rho(n, c+1)
+    return d
+def gcd(a,b):
+    if(b==0):
+        return a
+    else:
+        return gcd(b,a%b)
+with open(sys.argv[1]) as f:
+    for to_factor in f:
+        to_factor = int(to_factor)
+        if not to_factor % 2:
+            print("{}={}*2".format(to_factor, to_factor // 2))
+            continue
+        mul=rho(to_factor, 1)
+        print("{}={}*{}".format(to_factor, to_factor // mul, mul))
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
-
-        echo "$num$num1*$num2"
-}
-
-if [ $# -ne 1 ]
-then
-        echo 'Usage: factors <file>'
-        exit 1
-else
-
-        while read i
-        do
-
-                result=$(factor "$i")
-                check_factor $result
-
-        done < "$1"
-fi
